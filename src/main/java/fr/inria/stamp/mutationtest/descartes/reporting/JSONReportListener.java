@@ -73,7 +73,16 @@ public class JSONReportListener implements MutationResultListener{
                 report.endObject();
 
                 report.beginObjectAttribute("tests");
-                report.writeAttribute("killer", killer.hasSome() ? killer.value() : "");
+
+                report.beginListAttribute("failing");
+                for (String test :
+                        pair.getFailingTests()) {
+                    report.write(test);
+                }
+                report.endList();
+
+                //report.writeAttribute("killer", killer.hasSome() ? killer.value() : "");
+
                 report.writeAttribute("run", result.getNumberOfTestsRun());
 
                 report.beginListAttribute("ordered");
