@@ -4,7 +4,10 @@ jdk:
   - oraclejdk8
 
 before_script:
-  - git clone --depth=1 -b matrix https://github.com/STAMP-project/pitest && cd pitest && mvn install -DskipTests && cd ..
+  - git clone --depth=1 -b matrix https://github.com/STAMP-project/pitest
+  - cd pitest
+  - mvn install -DskipTests
+  - cd ..
 
 after_success:
   - mvn clean test jacoco:report coveralls:report
