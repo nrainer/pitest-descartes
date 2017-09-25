@@ -64,7 +64,7 @@ public class MutationOperatorTest {
 
     @Test
     public void shouldFilterMethods() {
-        MutationOperator operator = MutationOperator.fromID(operatorID);
+        MutationOperator operator = MutationOperatorCreator.fromID(operatorID);
         for (Method method: targets) {
             if(operator.canMutate(method))
                 assertEquals("Wrong method accepted", expectedMethod, method.getName());

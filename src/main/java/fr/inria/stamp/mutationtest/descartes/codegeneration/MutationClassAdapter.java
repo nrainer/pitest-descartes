@@ -1,5 +1,6 @@
 package fr.inria.stamp.mutationtest.descartes.codegeneration;
 
+import fr.inria.stamp.mutationtest.descartes.operators.MutationOperatorCreator;
 import org.pitest.reloc.asm.Opcodes;
 import org.pitest.reloc.asm.ClassVisitor;
 import org.pitest.reloc.asm.MethodVisitor;
@@ -25,7 +26,7 @@ public class MutationClassAdapter extends ClassVisitor {
         Location location = mID.getLocation();
         if(location.getMethodDesc().equals(desc) && location.getMethodName().name().equals(name)) {
             return new MutationMethodAdapter(
-                    MutationOperator.fromID(mID.getMutator()),
+                    MutationOperatorCreator.fromID(mID.getMutator()),
                     new Method(location.getMethodName().name(), location.getMethodDesc()),
                     methodVisitor);
         }

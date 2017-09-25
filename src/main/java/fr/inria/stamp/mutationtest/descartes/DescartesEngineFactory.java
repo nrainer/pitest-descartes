@@ -7,17 +7,13 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
-import fr.inria.stamp.mutationtest.descartes.operators.NullMutationOperator;
-import fr.inria.stamp.mutationtest.descartes.operators.VoidMutationOperator;
+import fr.inria.stamp.mutationtest.descartes.operators.*;
 import org.pitest.reloc.asm.commons.Method;
 
 import org.pitest.functional.predicate.*;
 
 import org.pitest.mutationtest.MutationEngineFactory;
 import org.pitest.mutationtest.engine.MutationEngine;
-
-import fr.inria.stamp.mutationtest.descartes.operators.MutationOperator;
-import fr.inria.stamp.mutationtest.descartes.operators.WrongOperatorException;
 
 public class DescartesEngineFactory implements MutationEngineFactory{
 
@@ -66,7 +62,7 @@ public class DescartesEngineFactory implements MutationEngineFactory{
         for (String id :
                 mutators) {
             try {
-                result.add(MutationOperator.fromID(id));
+                result.add(MutationOperatorCreator.fromID(id));
             }catch (WrongOperatorException exc) {
                 org.pitest.util.Log.getLogger().log(Level.WARNING, "Illegal ID value. Details: " + exc.getMessage());
             }

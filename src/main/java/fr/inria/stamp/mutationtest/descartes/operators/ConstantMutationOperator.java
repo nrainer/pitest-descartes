@@ -9,7 +9,7 @@ import org.pitest.reloc.asm.commons.Method;
 /**
  * A mutation operator that replaces the method body by a return instruction whose result is the given constant
  */
-public class ConstantMutationOperator extends MutationOperator {
+public class ConstantMutationOperator implements MutationOperator {
 
     final private Object constant;
     final private  String id;
@@ -41,7 +41,6 @@ public class ConstantMutationOperator extends MutationOperator {
      * @param method Method to be tested by the operator
      * @return A boolean value indicating if the return type and the constant value type are the same
      */
-    @Override
     public boolean canMutate(Method method) {
         Type methodType = method.getReturnType();
         int typeSort = methodType.getSort();
@@ -62,7 +61,6 @@ public class ConstantMutationOperator extends MutationOperator {
      * @param method Method to which the mutation should be applied
      * @param mv MethodVisitor in charge of code generation.
      */
-    @Override
     public void generateCode(Method method, MethodVisitor mv) {
         assert canMutate(method);
         mv.visitLdcInsn(constant);
@@ -71,12 +69,10 @@ public class ConstantMutationOperator extends MutationOperator {
         mv.visitInsn(methodType.getOpcode(Opcodes.IRETURN));
     }
 
-    @Override
     public String getID() {
         return id;
     }
 
-    @Override
     public String getDescription() {
         return "All method body replaced by: return " + id;
     }

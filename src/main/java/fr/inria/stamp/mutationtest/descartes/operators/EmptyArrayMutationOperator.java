@@ -5,7 +5,7 @@ import org.pitest.reloc.asm.MethodVisitor;
 import org.pitest.reloc.asm.Type;
 import org.pitest.reloc.asm.commons.Method;
 
-public class EmptyArrayMutationOperator extends MutationOperator {
+public class EmptyArrayMutationOperator implements MutationOperator {
 
     /**
      * Returns a value indicating whether the operator can transform the given method.

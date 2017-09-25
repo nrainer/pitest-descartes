@@ -9,13 +9,13 @@ public class MutationOperatorFactoryTest {
 
     @Test
     public void shouldCreateVoidMutator() {
-        MutationOperator operator = MutationOperator.fromID("void");
+        MutationOperator operator = MutationOperatorCreator.fromID("void");
         assertThat(operator, is((MutationOperator) VoidMutationOperator.getInstance()));
     }
 
     @Test
     public void shouldCreateNullMutator() {
-        MutationOperator operator = MutationOperator.fromID("null");
+        MutationOperator operator = MutationOperatorCreator.fromID("null");
         assertThat(operator, is((MutationOperator) NullMutationOperator.getInstance()));
     }
 
@@ -23,7 +23,7 @@ public class MutationOperatorFactoryTest {
     public void shouldGetIntegerMutator() {
         int value = 3;
         String id = String.valueOf(value);
-        MutationOperator operator = MutationOperator.fromID(id);
+        MutationOperator operator = MutationOperatorCreator.fromID(id);
         assertTrue(operator.getClass().equals(ConstantMutationOperator.class));
         assertThat(operator.getID(), is(id));
         Object constant = ((ConstantMutationOperator)operator).getConstant();

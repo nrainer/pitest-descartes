@@ -7,7 +7,7 @@ import fr.inria.stamp.mutationtest.descartes.operators.parsing.OperatorParser;
 /**
  * Mutation operator definition
  */
-public abstract class MutationOperator {
+public interface MutationOperator {
 
     /**
      * Returns a value indicating whether the operator can transform the given method.
@@ -15,32 +15,25 @@ public abstract class MutationOperator {
      * @param method Method to be tested by the operator
      * @return A boolean value indicating if the mutation can be performed
      */
-    public abstract boolean canMutate(Method method);
+    boolean canMutate(Method method);
 
-    public abstract void generateCode(Method method, MethodVisitor mv);
+    /**
+     * Generates the mutated code for the given method.
+     * @param method method to be mutated
+     * @param mv Method visitor for code generation.
+     */
+    void generateCode(Method method, MethodVisitor mv);
 
-    public abstract String getID();
+    /**
+     * Gets the ID of this mutation operator to be used in the final report.
+     * @return A string identifying the mutation operator.
+     */
+    String getID();
 
-    public abstract String getDescription();
-
-    public static MutationOperator fromID(String id) {
-        OperatorParser parser = new OperatorParser(id);
-        Object value = parser.parse();
-        if(parser.hasErrors())
-            throw new WrongOperatorException("Invalid operator id: " + parser.getErrors().get(0));
-        if(value == null)
-            return NullMutationOperator.getInstance();
-        if(value.equals(Void.class)) {
-            return VoidMutationOperator.getInstance();
-        }
-        if(value.equals(EmptyArrayMutationOperator.getInstance().getID())) {
-            return EmptyArrayMutationOperator.getInstance();
-        }
-        try {
-            return new ConstantMutationOperator(id, value);
-        }catch (IllegalArgumentException exc) {
-            throw new WrongOperatorException("Invalid operator id", exc);
-        }
-    }
+    /**
+     * Gets the description of this mutation operator to be used in the final report.
+     * @return A string containing the description of the mutation operator.
+     */
+    String getDescription();
 
 }
