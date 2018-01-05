@@ -57,11 +57,11 @@ public class OperatorLexerTest {
         long value = 12345678910L;
         OperatorLexer lexer = new OperatorLexer(new StringReader(input));
         try {
-            Token lookahed = lexer.nextToken();
-            while (lookahed.getType() != TokenType.EOF) {
-                assertEquals(TokenType.LONG_LITERAL, lookahed.getType());
-                assertEquals(value, lookahed.getData());
-                lookahed = lexer.nextToken();
+            Token lookahead = lexer.nextToken();
+            while (lookahead.getType() != TokenType.EOF) {
+                assertEquals(TokenType.LONG_LITERAL, lookahead.getType());
+                assertEquals(value, lookahead.getData());
+                lookahead = lexer.nextToken();
             }
         }catch(IOException exc) {
             fail("Unexpected exception: " + exc.getMessage());
@@ -112,6 +112,28 @@ public class OperatorLexerTest {
             fail("Unexpected exception: " + exc.getMessage());
         }
 
+    }
+
+    @Test
+    public void shouldMatchQualifiedNames() {
+        String input = "object java.lang.Object path.to.a.Class__";
+        int count = input.split("\\s+").length;
+        int matched = 0;
+        OperatorLexer lexer = new OperatorLexer(new StringReader(input));
+        try {
+            Token lookahead = lexer.nextToken();
+            while(lookahead.getType() != TokenType.EOF) {
+                assertEquals("Value: " + lookahead.getData().toString() + " was not recognized as a qualified name",
+                        TokenType.QUALIFIED_NAME, lookahead.getType());
+                lookahead = lexer.nextToken();
+                matched++;
+            }
+        }
+        catch (IOException exc) {
+            fail("Unexpected exception: " + exc.getMessage());
+        }
+        assertEquals("Expected " + count + "names but got " + matched,
+                matched, count);
     }
 
 }

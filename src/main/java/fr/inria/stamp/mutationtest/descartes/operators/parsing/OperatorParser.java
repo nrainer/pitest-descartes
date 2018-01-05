@@ -1,29 +1,50 @@
 package fr.inria.stamp.mutationtest.descartes.operators.parsing;
 
+import fr.inria.stamp.mutationtest.descartes.operators.*;
+
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
 
+
 public class OperatorParser {
 
-    private final OperatorLexer lexer;
-
-    public OperatorParser(String input) {
-        lexer = new OperatorLexer(new StringReader(input));
-        errors = new LinkedList<String>();
-    }
+    private OperatorLexer lexer;
 
     private Token lookahead;
 
-    private Object result;
-    public Object getResult() {
+    private String input;
+
+    public OperatorParser() {
+        errors = new LinkedList<String>();
+        reset();
+    }
+
+    private void reset() {
+        lexer = null;
+        result = null;
+        input = null;
+        errors.clear();
+    }
+
+    private MutationOperator result;
+    public MutationOperator getResult() {
         return result;
     }
 
     private final List<String> errors;
     public List<String> getErrors() {
         return errors;
+    }
+
+    public String getFirstError() {
+        if(hasErrors())
+            return errors.get(0);
+        return null;
     }
 
     public boolean hasErrors() {
@@ -42,7 +63,6 @@ public class OperatorParser {
         return false;
     }
 
-
     private void next() throws IOException {
         lookahead = lexer.nextToken();
     }
@@ -58,117 +78,193 @@ public class OperatorParser {
         return false;
     }
 
-    public Object parse() {
+    public MutationOperator parse(String input) {
+        reset();
+        lexer = new OperatorLexer(new StringReader((input)));
+        this.input = input;
 
-        result = null;
+        parseInput();
+
+        if (hasErrors())
+            result = null;
+
+        return result;
+    }
+
+    private void parseInput() {
         try {
             next();
-            if(lookaheadIsOneOf(
-                    TokenType.NULL_KWD,
-                    TokenType.VOID_KWD,
-                    TokenType.TRUE_KWD,
-                    TokenType.FALSE_KWD,
-                    TokenType.EMPTY_KWD,
-                    TokenType.CHAR_LITERAL,
-                    TokenType.STRING_LITERAL,
-                    TokenType.INT_LITERAL,
-                    TokenType.LONG_LITERAL,
-                    TokenType.FLOAT_LITERAL,
-                    TokenType.DOUBLE_LITERAL)) {
-                result = lookahead.getData();
+            switch (lookahead.getType()) {
+                case NULL_KWD:
+                    result = NullMutationOperator.getInstance();
+                    break;
+                case VOID_KWD:
+                    result = VoidMutationOperator.getInstance();
+                    break;
+                case EMPTY_KWD:
+                    result = EmptyArrayMutationOperator.getInstance();
+                    break;
+                case TRUE_KWD:
+                case FALSE_KWD:
+                case CHAR_LITERAL:
+                case INT_LITERAL:
+                case STRING_LITERAL:
+                case LONG_LITERAL:
+                case FLOAT_LITERAL:
+                case DOUBLE_LITERAL:
+                    result = new ConstantMutationOperator(input, lookahead.getData());
+                    break;
+                case MINUS:
+                    parseNegatedNumber();
+                    break;
+                case LPAR:
+                    parseCastedInteger();
+                    break;
+                case QUALIFIED_NAME:
+                    result = getOperatorFromClassName((String)lookahead.getData());
+                    break;
+                default:
+                    unexpectedTokenError();
+                    break;
             }
-            else if(lookaheadIs(TokenType.MINUS)) {
-                parseNegatedNumber();
-            }
-            else if(lookaheadIs(TokenType.LPAR)) {
-                parseCastedInteger();
-            }
-            else {
-                unexpectedTokenError();
-            }
+            if(hasErrors())
+                return;
+
             next();
             if(!match(TokenType.EOF))
                 unexpectedTokenError();
 
         } catch(IOException exc) {
             errors.add("Unexpected error: " + exc.getMessage());
-            result = null;
         }
-        return result;
+
     }
 
-    //TODO: More descriptive error messages
+    private MutationOperator getOperatorFromClassName(String className) {
+        try {
+            Class<?> clazz = Class.forName(className);
+
+            //Search for a default constructor
+            if(!MutationOperator.class.isAssignableFrom(clazz)) {
+                error("Class " + className + " does not implement the MutationOperator interface.");
+                return null;
+            }
+
+
+            Constructor<?> ctor = null;
+            for(Constructor<?> current : clazz.getConstructors()) {
+                if (current.getParameterTypes().length == 0)
+                    ctor = current;
+            }
+
+            //Constructor was found, return the instance
+            if(ctor != null)
+                return (MutationOperator)ctor.newInstance();
+
+
+            //Constructor wasn't found, search for a static getInstance method with no parameters
+            Method method = clazz.getMethod("getInstance");
+            return (MutationOperator) method.invoke(null);
+
+        }
+        catch(ClassNotFoundException exc) {
+            error("Operator class " + className + " was not found.");
+        }
+        catch(NoSuchMethodException exc) {
+            error("Operator class " + className + " had no default constructor nor a static method getInstance with no parameters.");
+        }
+        catch(SecurityException exc) {
+            error("Security problem detected while instanciating class " + className);
+        }
+        catch(InstantiationException exc) {
+            error("Could not instantiate operator class " + className);
+        }
+        catch(IllegalAccessException exc) {
+            error("Illegal access detected while instanciating operator class " + className);
+        }
+        catch (InvocationTargetException exc) {
+            error("Could not instantiate operator class " + className);
+        }
+        catch(Exception exc) {
+            error("An unexpected error occurred while instanciating operator class " + className);
+        }
+        return null;
+    }
+
     private void unexpectedTokenError() {
-        errors.add("Unexpected token type: " + lookahead.getType().name());
-        result = null;
+        error("Unexpected token type: " + lookahead.getType().name());
     }
 
-
-    private void parseNegatedNumber() throws IOException{
-        //TODO: Find a way to refactor this method
-
-        if (match(TokenType.MINUS)) {
-            if(lookaheadIs(TokenType.INT_LITERAL)) {
-                result = - (Integer)lookahead.getData();
-            }
-            else if(lookaheadIs(TokenType.LONG_LITERAL)) {
-                result = - (Long) lookahead.getData();
-            }
-            else if(lookaheadIs(TokenType.FLOAT_LITERAL)) {
-                result = - (Float) lookahead.getData();
-            }
-            else if(lookaheadIs(TokenType.DOUBLE_LITERAL)) {
-                result = - (Double) lookahead.getData();
-            }
-            else
-                unexpectedTokenError();
-        }
-        else
-            unexpectedTokenError();
+    private void error(String message) {
+        errors.add(message);
     }
 
-    private void parseCastedInteger () throws IOException{
-        //TODO: Find a way to refactor this method
-        if(match(TokenType.LPAR)) {
-            if(lookaheadIs(TokenType.BYTE_KWD)) {
-                next();
-                if(match(TokenType.RPAR)) {
-                    boolean negate = false;
-                    if(negate = lookaheadIs(TokenType.MINUS)){ next(); }
-
-                    if(lookaheadIs(TokenType.INT_LITERAL)) {
-                        result = ((Integer)lookahead.getData()).byteValue();
-                        if(negate)
-                            result = - (Byte)result;
-                    }
-                    else
-                        unexpectedTokenError();
-                }
-                else
-                    unexpectedTokenError();
-            }
-            else if(lookaheadIs(TokenType.SHORT_KWD)) {
-                next();
-                if(match(TokenType.RPAR)) {
-                    boolean negate = false;
-                    if(negate = lookaheadIs(TokenType.MINUS)) { next(); }
-
-                    if(lookaheadIs(TokenType.INT_LITERAL)) {
-                        result = ((Integer)lookahead.getData()).shortValue();
-                        if(negate)
-                            result = - (Short)result;
-                    }
-                    else
-                        unexpectedTokenError();
-                }
-                else
-                    unexpectedTokenError();
-
-            }
-            else
-                unexpectedTokenError();
-        }
-        else
+    private void parseNegatedNumber() throws IOException {
+        if(!match(TokenType.MINUS)) {
             unexpectedTokenError();
+            return;
+        }
+        Object data = null;
+        switch (lookahead.getType()){
+            case INT_LITERAL:
+                data = - (Integer)lookahead.getData();
+                break;
+            case LONG_LITERAL:
+                data = - (Long) lookahead.getData();
+                break;
+            case FLOAT_LITERAL:
+                data = - (Float) lookahead.getData();
+                break;
+            case DOUBLE_LITERAL:
+                data = - (Double) lookahead.getData();
+                break;
+            default:
+                unexpectedTokenError();
+                return;
+        }
+        result = new ConstantMutationOperator(input, data);
+    }
+
+    private void parseCastedInteger () throws IOException {
+        //Parsing
+        if(!match(TokenType.LPAR)) {
+            unexpectedTokenError();
+            return;
+        }
+        if(!lookaheadIsOneOf(TokenType.SHORT_KWD, TokenType.BYTE_KWD)) {
+            error("Integer casting only supported for short and byte types.");
+            return;
+        }
+
+        TokenType castTo = lookahead.getType();
+        next();
+
+        if(!match(TokenType.RPAR)) {
+            unexpectedTokenError();
+            return;
+        }
+
+        boolean negated = false;
+
+        if(negated = lookaheadIs(TokenType.MINUS)) {
+            next();
+        }
+
+        if(!lookaheadIs(TokenType.INT_LITERAL)) {
+            error("Only integer literals can be casted.");
+            return;
+        }
+
+        //Evaluation
+        Integer number = (Integer)lookahead.getData();
+        if(negated)
+            number = -number;
+        Object data;
+        if(castTo == TokenType.SHORT_KWD)
+            data = number.byteValue();
+        else
+            data = number.shortValue();
+
+        result = new ConstantMutationOperator(input, data);
     }
 }

@@ -137,6 +137,11 @@ FLit2    = \. \d+
 FLit3    = \d+
 Exponent = [eE] [+-]? \d+
 
+/* Class names */
+
+Identifier = [a-zA-Z][a-zA-Z0-9_$]*
+QualifiedName = {Identifier}(\.{Identifier})*
+
 %%
 /*Lexical rules*/
 <YYINITIAL> {
@@ -166,6 +171,8 @@ Exponent = [eE] [+-]? \d+
 
     {FloatLiteral}      { return parse(Literal.FLOAT); }
     {DoubleLiteral}     { return parse(Literal.DOUBLE); }
+
+    {QualifiedName}     { return new Token(TokenType.QUALIFIED_NAME, yytext());}
 
     \'  { yybegin(CHAR); }
     \"  { yybegin(STRING); string.setLength(0); }

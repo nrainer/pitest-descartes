@@ -8,6 +8,7 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import fr.inria.stamp.mutationtest.descartes.operators.*;
+import fr.inria.stamp.mutationtest.descartes.operators.parsing.OperatorParser;
 import org.pitest.reloc.asm.commons.Method;
 
 import org.pitest.functional.predicate.*;
@@ -59,13 +60,13 @@ public class DescartesEngineFactory implements MutationEngineFactory{
             result.add(NullMutationOperator.getInstance());
             return result;
         }
-        for (String id :
-                mutators) {
-            try {
-                result.add(MutationOperatorCreator.fromID(id));
-            }catch (WrongOperatorException exc) {
-                org.pitest.util.Log.getLogger().log(Level.WARNING, "Illegal ID value. Details: " + exc.getMessage());
-            }
+        OperatorParser parser = new OperatorParser();
+        for (String id : mutators) {
+                MutationOperator operator = parser.parse(id);
+                if(!parser.hasErrors())
+                    result.add(operator);
+                else
+                    org.pitest.util.Log.getLogger().log(Level.SEVERE, "Illegal operator: " + id + ". Details: " + parser.getFirstError());
         }
         return result;
     }
