@@ -47,13 +47,6 @@ public class OperatorParserTest {
 
     @Test
     public void shouldParseValue() {
-//        Byte b = 3;
-//        ConstantMutationOperator cb = new ConstantMutationOperator("(byte)3", b);
-//        ConstantMutationOperator cc = new ConstantMutationOperator("(byte)3", (byte)3);
-//
-//        assertEquals(cb, cc);
-
-
         assertFalse("Errors found while parsing: " + input, parser.hasErrors());
         assertEquals( output, parser.parse(input));
     }
