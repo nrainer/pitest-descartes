@@ -260,7 +260,7 @@ public class OperatorParser {
         if(negated)
             number = -number;
         Object data;
-        if(castTo == TokenType.SHORT_KWD)
+        if(castTo == TokenType.BYTE_KWD)
             data = number.byteValue();
         else
             data = number.shortValue();
