@@ -4,9 +4,9 @@ import fr.inria.stamp.mutationtest.descartes.operators.*;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -135,59 +135,76 @@ public class OperatorParser {
                 unexpectedTokenError();
 
         } catch(IOException exc) {
-            errors.add("Unexpected error: " + exc.getMessage());
+            error("Unexpected error: " + exc.getMessage());
         }
 
     }
 
     private MutationOperator getOperatorFromClassName(String className) {
-        try {
-            Class<?> clazz = Class.forName(className);
 
-            //Search for a default constructor
-            if(!MutationOperator.class.isAssignableFrom(clazz)) {
-                error("Class " + className + " does not implement the MutationOperator interface.");
+        Class<?> clazz = null;
+        try {
+            clazz = Class.forName(className);
+        }
+        catch (ClassNotFoundException e) {
+            error(e.getMessage());
+            return null;
+        }
+
+        MutationOperator result = null;
+        List<String> operatorErrors = new LinkedList<>();
+
+        if(MutationOperator.class.isAssignableFrom(clazz)) {
+            result = getOperatorFromImplementation(clazz, operatorErrors);
+        }
+        if(result == null) //Could not create the instance or it is not a MutationOperator implementation
+        {
+            result = getOperatorFromMethod(clazz, operatorErrors);
+        }
+        if(result == null) //No attempt was successful
+        {
+            errors.add(operatorErrors.get(0)); //Get the first error
+        }
+        return result;
+    }
+
+    private MutationOperator getOperatorFromImplementation(Class<?> clazz, List<String> errors) {
+        try {
+            return (MutationOperator) clazz.newInstance();
+        }
+        catch (Exception e) {
+            error(e.getMessage());
+            return null;
+        }
+    }
+
+    private MutationOperator getOperatorFromMethod(Class<?> clazz, List<String> errors) {
+        //A class with a single public static method that returns a MutationOperator can be used.
+        Method[] methods = Arrays.stream(clazz.getMethods()).filter(
+                m -> m.getParameterCount() == 0 &&
+                        m.isAccessible() &&
+                        Modifier.isStatic(m.getModifiers()) &&
+                        clazz.isAssignableFrom(m.getReturnType()) && m.isAccessible()).
+                toArray(Method[]::new);
+
+
+        if(methods.length == 1) //There is only one
+        {
+            try {
+                return (MutationOperator) methods[0].invoke(null);
+            }
+            catch (Exception e) {
+                error("Could not create a MutationOperator instance using " + clazz.getName() + "." + methods[0].getName() + ". Details: " + e.getMessage());
                 return null;
             }
+        }
 
+        if(methods.length == 0) {
+            error("Class " + clazz.getName() + " is not a MutationOperator implementation nor have an accessible static method with no parameters that returns a MutationOperator instance.");
+            return null;
+        }
 
-            Constructor<?> ctor = null;
-            for(Constructor<?> current : clazz.getConstructors()) {
-                if (current.getParameterTypes().length == 0)
-                    ctor = current;
-            }
-
-            //Constructor was found, return the instance
-            if(ctor != null)
-                return (MutationOperator)ctor.newInstance();
-
-
-            //Constructor wasn't found, search for a static getInstance method with no parameters
-            Method method = clazz.getMethod("getInstance");
-            return (MutationOperator) method.invoke(null);
-
-        }
-        catch(ClassNotFoundException exc) {
-            error("Operator class " + className + " was not found.");
-        }
-        catch(NoSuchMethodException exc) {
-            error("Operator class " + className + " had no default constructor nor a static method getInstance with no parameters.");
-        }
-        catch(SecurityException exc) {
-            error("Security problem detected while instanciating class " + className);
-        }
-        catch(InstantiationException exc) {
-            error("Could not instantiate operator class " + className);
-        }
-        catch(IllegalAccessException exc) {
-            error("Illegal access detected while instanciating operator class " + className);
-        }
-        catch (InvocationTargetException exc) {
-            error("Could not instantiate operator class " + className);
-        }
-        catch(Exception exc) {
-            error("An unexpected error occurred while instanciating operator class " + className);
-        }
+        error("Class " + clazz.getName() + " has more than one accessible static method with no parameters that return an instance of MutationOperator.");
         return null;
     }
 
