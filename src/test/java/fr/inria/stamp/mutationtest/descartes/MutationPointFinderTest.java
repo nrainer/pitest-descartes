@@ -6,6 +6,7 @@ import java.util.Arrays;
 
 
 import fr.inria.stamp.mutationtest.descartes.operators.MutationOperatorCreator;
+import fr.inria.stamp.mutationtest.descartes.operators.parsing.OperatorParser;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,7 +39,7 @@ public class MutationPointFinderTest {
         engine = new DescartesMutationEngine(FCollection.map(operators, new F<String, MutationOperator>()
         {
             public MutationOperator apply(String id) {
-                return MutationOperatorCreator.fromID(id);
+                return MutationOperator.fromID(id);
             }
 
         }));

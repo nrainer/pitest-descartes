@@ -36,4 +36,19 @@ public interface MutationOperator {
      */
     String getDescription();
 
+
+    /**
+     * Constructs a mutation operator instance from the given the identifier.
+     * @param id String identifying the operator instance to construct.
+     * @return A mutation operator instance matching the given identifier.
+     * @throws WrongOperatorException if no operator can be obtained from the given identifier.
+     */
+    static MutationOperator fromID(String id) throws WrongOperatorException {
+        OperatorParser parser = new OperatorParser();
+        MutationOperator result = parser.parse(id);
+        if(parser.hasErrors())
+            throw new WrongOperatorException(id, parser.getFirstError());
+        return result;
+    }
+
 }

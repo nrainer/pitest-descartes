@@ -1,6 +1,7 @@
 package fr.inria.stamp.mutationtest.descartes.operators;
 
 import fr.inria.stamp.mutationtest.descartes.DescartesMutationEngine;
+import fr.inria.stamp.mutationtest.descartes.operators.parsing.OperatorParser;
 import org.junit.Test;
 import org.junit.Before;
 import static org.junit.Assert.*;
@@ -64,7 +65,7 @@ public class MutationOperatorTest {
 
     @Test
     public void shouldFilterMethods() {
-        MutationOperator operator = MutationOperatorCreator.fromID(operatorID);
+        MutationOperator operator = MutationOperator.fromID(operatorID);
         for (Method method: targets) {
             if(operator.canMutate(method))
                 assertEquals("Wrong method accepted", expectedMethod, method.getName());
