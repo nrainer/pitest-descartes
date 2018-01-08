@@ -57,6 +57,11 @@ public class EmptyArrayMutationOperator implements MutationOperator {
         return "Method body replaced by instructions that returns an empty array of the corresponding type";
     }
 
+    @Override
+    public boolean equals(Object other) {
+        return other instanceof EmptyArrayMutationOperator;
+    }
+
     //Singleton pattern implementation
     private static final EmptyArrayMutationOperator instance = new EmptyArrayMutationOperator();
 

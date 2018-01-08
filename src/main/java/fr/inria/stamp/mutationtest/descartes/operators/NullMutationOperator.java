@@ -1,5 +1,6 @@
 package fr.inria.stamp.mutationtest.descartes.operators;
 
+import com.thoughtworks.xstream.mapper.Mapper;
 import org.pitest.reloc.asm.MethodVisitor;
 import org.pitest.reloc.asm.Opcodes;
 import org.pitest.reloc.asm.Type;
@@ -33,9 +34,13 @@ public class NullMutationOperator implements MutationOperator{
         return "null";
     }
 
-
     public String getDescription(){
         return "All methods instructions replaced by: return null;";
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return other instanceof NullMutationOperator;
     }
 
     //Singleton pattern implementation

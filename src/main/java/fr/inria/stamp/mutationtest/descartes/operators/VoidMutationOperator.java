@@ -35,6 +35,11 @@ public final class VoidMutationOperator implements MutationOperator {
         return "All method instructions removed";
     }
 
+    @Override
+    public boolean equals(Object other) {
+        return other instanceof VoidMutationOperator;
+    }
+
     //Singleton pattern implementation
     private static final VoidMutationOperator instance = new VoidMutationOperator();
 

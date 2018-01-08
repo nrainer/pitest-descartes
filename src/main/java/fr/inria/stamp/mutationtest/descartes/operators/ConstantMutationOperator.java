@@ -1,5 +1,6 @@
 package fr.inria.stamp.mutationtest.descartes.operators;
 
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import fr.inria.stamp.utils.TypeHelper;
 import org.pitest.reloc.asm.Opcodes;
 import org.pitest.reloc.asm.Type;
@@ -75,6 +76,12 @@ public class ConstantMutationOperator implements MutationOperator {
 
     public String getDescription() {
         return "All method body replaced by: return " + id;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return other instanceof ConstantMutationOperator &&
+                ((ConstantMutationOperator) other).constant.equals(constant);
     }
 
 }
