@@ -152,23 +152,20 @@ public class OperatorParser {
         }
 
         MutationOperator result = null;
-        List<String> operatorErrors = new LinkedList<>();
 
         if(MutationOperator.class.isAssignableFrom(clazz)) {
-            result = getOperatorFromImplementation(clazz, operatorErrors);
+            result = getOperatorFromImplementation(clazz);
         }
+
         if(result == null) //Could not create the instance or it is not a MutationOperator implementation
         {
-            result = getOperatorFromMethod(clazz, operatorErrors);
-        }
-        if(result == null) //No attempt was successful
-        {
-            errors.add(operatorErrors.get(0)); //Get the first error
+            errors.clear(); //Fallback
+            result = getOperatorFromMethod(clazz);
         }
         return result;
     }
 
-    private MutationOperator getOperatorFromImplementation(Class<?> clazz, List<String> errors) {
+    private MutationOperator getOperatorFromImplementation(Class<?> clazz) {
         try {
             return (MutationOperator) clazz.newInstance();
         }
@@ -178,15 +175,17 @@ public class OperatorParser {
         }
     }
 
-    private MutationOperator getOperatorFromMethod(Class<?> clazz, List<String> errors) {
+    private MutationOperator getOperatorFromMethod(Class<?> clazz) {
         //A class with a single public static method that returns a MutationOperator can be used.
         Method[] methods = Arrays.stream(clazz.getMethods()).filter(
-                m -> m.getParameterCount() == 0 &&
-                        m.isAccessible() &&
-                        Modifier.isStatic(m.getModifiers()) &&
-                        clazz.isAssignableFrom(m.getReturnType()) && m.isAccessible()).
-                toArray(Method[]::new);
-
+                m -> {
+                    int modifiers = m.getModifiers();
+                    return m.getParameterCount() == 0 && //No parameters
+                            Modifier.isPublic(modifiers) && // Accessible
+                            Modifier.isStatic(modifiers) && // Static
+                            MutationOperator.class.isAssignableFrom(m.getReturnType()) //Returns a MutationOperator instance
+                            ;
+                }).toArray(Method[]::new);
 
         if(methods.length == 1) //There is only one
         {
@@ -200,7 +199,7 @@ public class OperatorParser {
         }
 
         if(methods.length == 0) {
-            error("Class " + clazz.getName() + " is not a MutationOperator implementation nor have an accessible static method with no parameters that returns a MutationOperator instance.");
+            error("Class " + clazz.getName() + " is not a MutationOperator implementation or  does not have an accessible static method with no parameters that returns a MutationOperator instance.");
             return null;
         }
 

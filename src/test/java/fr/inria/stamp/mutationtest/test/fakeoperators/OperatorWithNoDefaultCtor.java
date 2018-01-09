@@ -4,9 +4,11 @@ import fr.inria.stamp.mutationtest.descartes.operators.MutationOperator;
 import org.pitest.reloc.asm.MethodVisitor;
 import org.pitest.reloc.asm.commons.Method;
 
-public class SingletonOperator implements MutationOperator{
+public class OperatorWithNoDefaultCtor implements MutationOperator {
 
-    private SingletonOperator() { }
+    public OperatorWithNoDefaultCtor(String name) {
+
+    }
 
     public boolean canMutate(Method method) {
         return false;
@@ -22,9 +24,5 @@ public class SingletonOperator implements MutationOperator{
 
     public String getDescription() {
         return null;
-    }
-
-    public static MutationOperator getInstance() {
-        return new SingletonOperator();
     }
 }
