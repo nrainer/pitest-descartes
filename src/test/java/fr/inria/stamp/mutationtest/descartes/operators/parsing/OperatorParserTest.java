@@ -5,6 +5,7 @@ import java.util.Collection;
 
 import static org.junit.Assert.*;
 
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import fr.inria.stamp.mutationtest.descartes.operators.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -34,6 +35,12 @@ public class OperatorParserTest {
                 {"false", new ConstantMutationOperator("false", false)},
                 {"'a'", new ConstantMutationOperator("'a'", 'a')},
                 {"\"string\"", new ConstantMutationOperator("string", "string")},
+                {"-4", new ConstantMutationOperator("-4", -4)},
+                {"-4L", new ConstantMutationOperator("-4L", -4L)},
+                {"(byte)-4", new ConstantMutationOperator("(byte)-4", (byte)-4)},
+                {"(short)-5", new ConstantMutationOperator("(short)-4", (short)-5)},
+                {"-56.0", new ConstantMutationOperator("-56.0", -56.0)},
+                {"-0.3f", new ConstantMutationOperator("-0.3f", -0.3f)}
         });
     }
 

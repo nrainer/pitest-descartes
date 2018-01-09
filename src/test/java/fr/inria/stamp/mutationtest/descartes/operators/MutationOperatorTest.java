@@ -1,34 +1,16 @@
 package fr.inria.stamp.mutationtest.descartes.operators;
 
-import fr.inria.stamp.mutationtest.descartes.DescartesMutationEngine;
-import fr.inria.stamp.mutationtest.descartes.operators.parsing.OperatorParser;
+
 import org.junit.Test;
 import org.junit.Before;
 import static org.junit.Assert.*;
-
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-
-import org.pitest.classinfo.ClassName;
-import org.pitest.mutationtest.engine.MutationDetails;
-
-import org.pitest.reloc.asm.*;
-
-
-
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-
-import fr.inria.stamp.mutationtest.descartes.MutationPointFinder;
-
 import fr.inria.stamp.mutationtest.test.*;
-import org.pitest.reloc.asm.tree.ClassNode;
-import org.pitest.reloc.asm.tree.MethodNode;
 import org.pitest.reloc.asm.commons.Method;
 
 @RunWith(Parameterized.class)
