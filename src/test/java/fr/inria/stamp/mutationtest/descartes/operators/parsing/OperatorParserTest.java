@@ -5,7 +5,6 @@ import java.util.Collection;
 
 import static org.junit.Assert.*;
 
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import fr.inria.stamp.mutationtest.descartes.operators.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -57,7 +56,5 @@ public class OperatorParserTest {
         assertFalse("Errors found while parsing: " + input, parser.hasErrors());
         assertEquals( output, parser.parse(input));
     }
-
-
 
 }

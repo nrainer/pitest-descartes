@@ -1,12 +1,9 @@
 package fr.inria.stamp.mutationtest.descartes;
 
-import java.util.ArrayList;
+
 import java.util.Collection;
 import java.util.Arrays;
 
-
-import fr.inria.stamp.mutationtest.descartes.operators.MutationOperatorCreator;
-import fr.inria.stamp.mutationtest.descartes.operators.parsing.OperatorParser;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,9 +21,6 @@ import org.pitest.mutationtest.engine.MutationDetails;
 
 import org.pitest.functional.FCollection;
 import org.pitest.functional.F;
-
-import java.util.List;
-
 
 @RunWith(Parameterized.class)
 public class MutationPointFinderTest {
