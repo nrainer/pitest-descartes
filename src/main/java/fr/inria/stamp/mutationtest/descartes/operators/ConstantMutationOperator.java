@@ -1,6 +1,5 @@
 package fr.inria.stamp.mutationtest.descartes.operators;
 
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import fr.inria.stamp.utils.TypeHelper;
 import org.pitest.reloc.asm.Opcodes;
 import org.pitest.reloc.asm.Type;
