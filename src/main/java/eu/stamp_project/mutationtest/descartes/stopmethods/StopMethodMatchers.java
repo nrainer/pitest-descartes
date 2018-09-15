@@ -111,6 +111,12 @@ public interface StopMethodMatchers {
                         .then(opCode(ARETURN))
         );
     }
+    
+    static StopMethodMatcher returnsNull() {
+        return forBody(
+          match(opCode(NULL))
+          .then(opCode(ARETURN)));
+    }
 
 
 
